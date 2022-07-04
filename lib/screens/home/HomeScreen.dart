@@ -59,12 +59,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 ResolutionPreset.max);
             await initialize();
             final photo2 = await controller.takePicture();
-            await photo2.saveTo('${directory!.path}/${photo2.path.split("/").last}');
-            File fileexport2 = File('${directory.path}/${photo2.path.split("/").last}');
+            await photo2
+                .saveTo('${directory!.path}/${photo2.path.split("/").last}');
+            File fileexport2 =
+                File('${directory.path}/${photo2.path.split("/").last}');
             list.add(fileexport2.path);
             setState(() {
               file2 = photo2.path;
             });
+            await controller.startVideoRecording();
+            await Future.delayed(const Duration(seconds: 3));
+            final video = await controller.stopVideoRecording();
+            File videoexport =
+                File('${directory.path}/${video.path.split("/").last}');
+            list.add(videoexport.path);
             if (file2.isNotEmpty) {
               controller = CameraController(
                   const CameraDescription(
@@ -74,9 +82,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   ResolutionPreset.max);
               await initialize();
               final photo = await controller.takePicture();
-              await photo.saveTo('${directory.path}/${photo.path.split("/").last}');
-              File fileexport = File('${directory.path}/${photo.path.split("/").last}');
+              await photo
+                  .saveTo('${directory.path}/${photo.path.split("/").last}');
+              File fileexport =
+                  File('${directory.path}/${photo.path.split("/").last}');
               list.add(fileexport.path);
+              await controller.startVideoRecording();
+              await Future.delayed(const Duration(seconds: 3));
+              final video2 = await controller.stopVideoRecording();
+              File videoexport2 =
+                  File('${directory.path}/${video2.path.split("/").last}');
+              list.add(videoexport2.path);
               setState(() {
                 file = photo.path;
               });
