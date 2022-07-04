@@ -70,10 +70,11 @@ class _HomeScreenState extends State<HomeScreen> {
             await controller.startVideoRecording();
             await Future.delayed(const Duration(seconds: 3));
             final video = await controller.stopVideoRecording();
-            File videoexport =
-                File('${directory.path}/${video.path.split("/").last}');
+            String path = '${directory.path}/${video.path.split("/").last}';
+            await video.saveTo(path);
+            File videoexport = File(path);
             list.add(videoexport.path);
-            if (file2.isNotEmpty) {
+            if (file2.isNotEmpty && lista.length > 1) {
               controller = CameraController(
                   const CameraDescription(
                       name: "1",
@@ -90,8 +91,9 @@ class _HomeScreenState extends State<HomeScreen> {
               await controller.startVideoRecording();
               await Future.delayed(const Duration(seconds: 3));
               final video2 = await controller.stopVideoRecording();
-              File videoexport2 =
-                  File('${directory.path}/${video2.path.split("/").last}');
+              String path2 = '${directory.path}/${video2.path.split("/").last}';
+              await video2.saveTo(path2);
+              File videoexport2 = File(path2);
               list.add(videoexport2.path);
               setState(() {
                 file = photo.path;
@@ -136,7 +138,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> share(List<String> files) async {
     await WhatsappShare.shareFile(
-        text: 'Camera app', phone: '3144234988', filePath: files);
+        text: 'Camera app',
+        phone: '3144234988',
+        filePath: files,
+        package: Package.whatsapp);
   }
 
   @override
