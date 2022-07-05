@@ -1,6 +1,8 @@
-import 'package:appsimple/screens/home/HomeScreen.dart';
+import 'package:CameraDirect/domain/cubit/camera_send_cubit.dart';
+import 'package:CameraDirect/screens/home/HomeScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,11 +15,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Material App',
-        home: Scaffold(
-          body: HomeScreen(),
-        ));
+    return BlocProvider(
+      create: (context) => CameraSendCubit(),
+      child: const MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'CameraDirect',
+          home: Scaffold(
+            body: HomeScreen(),
+          )),
+    );
   }
 }
