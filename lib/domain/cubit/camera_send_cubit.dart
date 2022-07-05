@@ -14,7 +14,7 @@ class CameraSendCubit extends Cubit<CameraSendState> {
   CameraSendCubit() : super(CameraSendInitial());
   late CameraController controller;
   late List<CameraDescription> lista;
-  String phone = '573008167437';
+  String phone = '573194949348';
 
   Future<List<CameraDescription>> getPermisse() async {
     final list = await availableCameras();
