@@ -45,17 +45,32 @@ class _HomeScreenState extends State<HomeScreen> {
                               Lottie.asset("assets/action.json", repeat: false),
                         ));
                   case CameraSendLoading:
-                    return SizedBox(
-                      height: 200,
-                      width: 200,
-                      child: Lottie.asset("assets/loading.json"),
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          height: 200,
+                          width: 200,
+                          child: Image.asset('assets/art.png'),
+                        ),
+                         Text(
+                          "${state.props[0]}",
+                          style: TextStyle(fontSize: 16, color: Colors.black),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(
+                          height: 200,
+                          width: 200,
+                          child: Lottie.asset("assets/loading.json"),
+                        ),
+                      ],
                     );
                   case CameraSendError:
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
-                          "No fue posible acceder a la camara, por favor revise los permisos o intente mas tarde",
+                         Text(
+                          "${state.props[0]}",
                           style: TextStyle(fontSize: 16, color: Colors.black),
                           textAlign: TextAlign.center,
                         ),
@@ -70,12 +85,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               style:
                                   TextStyle(fontSize: 20, color: Colors.black),
                             )),
-                        GestureDetector(
-                            child: SizedBox(
+                        SizedBox(
                           height: 200,
                           width: 200,
                           child: Lottie.asset("assets/error.json"),
-                        ))
+                        )
                       ],
                     );
                   default:

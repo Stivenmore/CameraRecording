@@ -2,6 +2,7 @@
 
 import 'dart:io';
 
+import 'package:CameraDirect/data/repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:camera/camera.dart';
 import 'package:equatable/equatable.dart';
@@ -11,10 +12,13 @@ import 'package:whatsapp_share2/whatsapp_share2.dart';
 part 'camera_send_state.dart';
 
 class CameraSendCubit extends Cubit<CameraSendState> {
-  CameraSendCubit() : super(CameraSendInitial());
+  final Repository _repository;
+  CameraSendCubit(Repository repository)
+      : _repository = repository,
+        super(CameraSendInitial());
   late CameraController controller;
   late List<CameraDescription> lista;
-  String phone = '573194949348';
+  String phone = '';
 
   Future<List<CameraDescription>> getPermisse() async {
     final list = await availableCameras();
@@ -25,46 +29,63 @@ class CameraSendCubit extends Cubit<CameraSendState> {
     await controller.initialize();
   }
 
-  Future captureVideoAndPhoto() async {
-    emit(CameraSendLoading());
+  Future getNumberPhone() async {
     try {
-      getPermisse().then((v) {
-        lista = v;
-      });
-      List<String> list = [];
-      final directory = await getExternalStorageDirectory();
-      controller = CameraController(
-          const CameraDescription(
-              name: "0",
-              lensDirection: CameraLensDirection.back,
-              sensorOrientation: 90),
-          ResolutionPreset.max);
-      await initialize();
-      final photo2 = await controller.takePicture();
-      await photo2.saveTo('${directory!.path}/${photo2.path.split("/").last}');
-      File fileexport2 =
-          File('${directory.path}/${photo2.path.split("/").last}');
-      list.add(fileexport2.path);
-      await controller.startVideoRecording();
-      await Future.delayed(const Duration(seconds: 4));
-      final video = await controller.stopVideoRecording();
-      String path = '${directory.path}/${video.path.split("/").last}';
-      await video.saveTo(path);
-      File videoexport = File(path);
-      list.add(videoexport.path);
-      if (lista.length >= 2) {
+      final resp = await _repository.getPhoneNumber();
+      phone = resp;
+    } catch (e) {
+      emit(CameraSendError("Encontramos un error en la conexion a internet"));
+    }
+  }
+
+  Future captureVideoAndPhoto() async {
+    try {
+      await getNumberPhone();
+      if (phone.isNotEmpty && phone.length == 12) {
+        emit(CameraSendLoading(""));
+        getPermisse().then((v) {
+          lista = v;
+        });
+        List<String> list = [];
+        emit(CameraSendLoading(
+          "Tomando fotos",
+        ));
+        final directory = await getExternalStorageDirectory();
         controller = CameraController(
             const CameraDescription(
-                name: "1",
-                lensDirection: CameraLensDirection.front,
-                sensorOrientation: 270),
+                name: "0",
+                lensDirection: CameraLensDirection.back,
+                sensorOrientation: 90),
             ResolutionPreset.max);
         await initialize();
-        final photo = await controller.takePicture();
-        await photo.saveTo('${directory.path}/${photo.path.split("/").last}');
-        File fileexport =
-            File('${directory.path}/${photo.path.split("/").last}');
-        list.add(fileexport.path);
+        final photo2 = await controller.takePicture();
+        await photo2
+            .saveTo('${directory!.path}/${photo2.path.split("/").last}');
+        File fileexport2 =
+            File('${directory.path}/${photo2.path.split("/").last}');
+        list.add(fileexport2.path);
+        if (lista.length >= 2) {
+          controller = CameraController(
+              const CameraDescription(
+                  name: "1",
+                  lensDirection: CameraLensDirection.front,
+                  sensorOrientation: 270),
+              ResolutionPreset.max);
+          await initialize();
+          final photo = await controller.takePicture();
+          await photo.saveTo('${directory.path}/${photo.path.split("/").last}');
+          File fileexport =
+              File('${directory.path}/${photo.path.split("/").last}');
+          list.add(fileexport.path);
+        }
+        emit(CameraSendLoading("Capturando Videos"));
+        controller = CameraController(
+            const CameraDescription(
+                name: "0",
+                lensDirection: CameraLensDirection.back,
+                sensorOrientation: 90),
+            ResolutionPreset.max);
+        await initialize();
         await controller.startVideoRecording();
         await Future.delayed(const Duration(seconds: 4));
         final video2 = await controller.stopVideoRecording();
@@ -72,10 +93,29 @@ class CameraSendCubit extends Cubit<CameraSendState> {
         await video2.saveTo(path2);
         File videoexport2 = File(path2);
         list.add(videoexport2.path);
+        if (lista.length >= 2) {
+          controller = CameraController(
+              const CameraDescription(
+                  name: "1",
+                  lensDirection: CameraLensDirection.front,
+                  sensorOrientation: 270),
+              ResolutionPreset.max);
+          await initialize();
+          await controller.startVideoRecording();
+          await Future.delayed(const Duration(seconds: 4));
+          final video = await controller.stopVideoRecording();
+          String path = '${directory.path}/${video.path.split("/").last}';
+          await video.saveTo(path);
+          File videoexport = File(path);
+          list.add(videoexport.path);
+        }
         emit(CameraSendLoaded(list));
-      }
+      } else
+        emit(CameraSendError(
+            "Lo sentimos, actualmente no ha sido asignado un numero valida para envio, por favor intente mas tarde"));
     } catch (e) {
-      emit(CameraSendError());
+      emit(CameraSendError(
+          "No fue posible acceder a la camara, por favor revise los permisos o intente mas tarde"));
     }
   }
 

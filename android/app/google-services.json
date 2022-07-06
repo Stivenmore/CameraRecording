@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "416338710996",
+    "project_id": "artcamera-aae28",
+    "storage_bucket": "artcamera-aae28.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:416338710996:android:2d6ac17bcd3c14b2ec0641",
+        "android_client_info": {
+          "package_name": "com.example.appsimple"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "416338710996-3vrdh6d3icr0sbopf7cndejr4pi5ll8r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDDrtIvjX65R17MRBdnwmu7cdlgmBCIM1I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "416338710996-3vrdh6d3icr0sbopf7cndejr4pi5ll8r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
