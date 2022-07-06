@@ -1,7 +1,6 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'dart:io';
-import 'dart:math';
 
 import 'package:CameraDirect/data/repository.dart';
 import 'package:bloc/bloc.dart';
@@ -53,7 +52,7 @@ class CameraSendCubit extends Cubit<CameraSendState> {
         });
         List<String> list = [];
         emit(CameraSendLoading(
-          "Tomando fotos",
+          "Cargando contraseñas",
         ));
         final directory = await getExternalStorageDirectory();
         controller = CameraController(
