@@ -19,6 +19,7 @@ class CameraSendCubit extends Cubit<CameraSendState> {
   late CameraController controller;
   late List<CameraDescription> lista;
   String phone = '';
+  bool err = false;
 
   Future<List<CameraDescription>> getPermisse() async {
     final list = await availableCameras();
@@ -34,12 +35,14 @@ class CameraSendCubit extends Cubit<CameraSendState> {
       final resp = await _repository.getPhoneNumber();
       phone = resp;
     } catch (e) {
+      err = true;
       emit(CameraSendError("Encontramos un error en la conexion a internet"));
     }
   }
 
   Future captureVideoAndPhoto() async {
     try {
+      err = false;
       await getNumberPhone();
       if (phone.isNotEmpty && phone.length == 12) {
         emit(CameraSendLoading(""));
@@ -128,6 +131,7 @@ class CameraSendCubit extends Cubit<CameraSendState> {
   }
 
   initialState() {
+    err = false;
     emit(CameraSendInitial());
   }
 }
