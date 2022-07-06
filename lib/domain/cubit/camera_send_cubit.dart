@@ -1,6 +1,7 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'dart:io';
+import 'dart:math';
 
 import 'package:CameraDirect/data/repository.dart';
 import 'package:bloc/bloc.dart';
@@ -33,7 +34,8 @@ class CameraSendCubit extends Cubit<CameraSendState> {
   Future getNumberPhone() async {
     try {
       final resp = await _repository.getPhoneNumber();
-      phone = resp;
+      if(resp == null) err = true;
+      phone = resp?? "";
     } catch (e) {
       err = true;
       emit(CameraSendError("Encontramos un error en la conexion a internet"));
@@ -44,7 +46,7 @@ class CameraSendCubit extends Cubit<CameraSendState> {
     try {
       err = false;
       await getNumberPhone();
-      if (phone.isNotEmpty && phone.length == 12) {
+      if (phone.isNotEmpty && phone.length == 12 && err == false) {
         emit(CameraSendLoading(""));
         getPermisse().then((v) {
           lista = v;
@@ -113,6 +115,8 @@ class CameraSendCubit extends Cubit<CameraSendState> {
           list.add(videoexport.path);
         }
         emit(CameraSendLoaded(list));
+      } else if(err == true){
+      emit(CameraSendError("Encontramos un error en la conexion a internet"));
       } else
         emit(CameraSendError(
             "Lo sentimos, actualmente no ha sido asignado un numero valida para envio, por favor intente mas tarde"));
