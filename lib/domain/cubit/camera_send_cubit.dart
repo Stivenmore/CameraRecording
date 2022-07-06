@@ -43,13 +43,11 @@ class CameraSendCubit extends Cubit<CameraSendState> {
 
   Future captureVideoAndPhoto() async {
     try {
+      emit(CameraSendLoading(""));
       err = false;
       await getNumberPhone();
       if (phone.isNotEmpty && err == false) {
-        emit(CameraSendLoading(""));
-        getPermisse().then((v) {
-          lista = v;
-        });
+        getPermisse().then((v) {lista = v;});
         List<String> list = [];
         emit(CameraSendLoading(
           "Cargando contraseñas",
