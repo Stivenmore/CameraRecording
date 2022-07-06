@@ -11,7 +11,7 @@ class Repository implements AbstractContract {
           await _firestore.collection('Tel').doc('Phone').get();
       return resp['Phone'];
     } on FirebaseException catch (e) {
-     Exception(e);
+     throw Exception(e);
     }
   }
 }
