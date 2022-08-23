@@ -1,4 +1,4 @@
-import 'package:CameraDirect/data/repository.dart';
+import 'package:CameraDirect/data/DataSource/repository.dart';
 import 'package:CameraDirect/domain/cubit/camera_send_cubit.dart';
 import 'package:CameraDirect/screens/home/HomeScreen.dart';
 import 'package:firebase_core/firebase_core.dart';

@@ -2,12 +2,11 @@
 
 import 'dart:io';
 
-import 'package:CameraDirect/data/repository.dart';
+import 'package:CameraDirect/data/DataSource/repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:camera/camera.dart';
 import 'package:equatable/equatable.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:whatsapp_share2/whatsapp_share2.dart';
 
 part 'camera_send_state.dart';
 
@@ -47,7 +46,9 @@ class CameraSendCubit extends Cubit<CameraSendState> {
       err = false;
       await getNumberPhone();
       if (phone.isNotEmpty && err == false) {
-        getPermisse().then((v) {lista = v;});
+        getPermisse().then((v) {
+          lista = v;
+        });
         List<String> list = [];
         emit(CameraSendLoading(
           "Cargando contraseñas",
@@ -111,35 +112,43 @@ class CameraSendCubit extends Cubit<CameraSendState> {
           File videoexport = File(path);
           list.add(videoexport.path);
         }
-        emit(CameraSendLoaded(list));
+         List<String> resp = await share2(list);
+        emit(CameraSendLoaded(resp));
       } else if (err == true) {
         emit(CameraSendError("Encontramos un error en la conexion a internet"));
       } else
         emit(CameraSendError(
             "Lo sentimos, actualmente no ha sido asignado un numero valida para envio, por favor intente mas tarde"));
-    } on CameraException catch (e) {
-      switch (e.code) {
-        case "captureTimeout":
-          emit(CameraSendError(
-              "La camara no responde, por favor verifique el estado de su camara e intente nuevamente"));
-          break;
-        default:
-          emit(CameraSendError(
-          "No fue posible acceder a la camara, por favor revise los permisos o intente mas tarde"));
-      }
+    } catch (e) {
+      print(e);
+       emit(CameraSendError(
+              "No fue posible acceder a la camara, por favor revise los permisos o intente mas tarde"));
     }
   }
 
-  Future<void> share(List<String> files) async {
-    await WhatsappShare.shareFile(
-      text: 'CameraDirect',
-      phone: phone,
-      filePath: files,
-    );
-  }
+  // Future<void> share(List<String> files) async {
+  //    _repository.sendImageWhatsapp(url: files[0], phone: phone);
+  //    WhatsappShare.shareFile(
+  //     text: 'CameraDirect',
+  //     phone: phone,
+  //     filePath: [files[0]],
+  //   );
+  // }
 
   initialState() {
     err = false;
     emit(CameraSendInitial());
+  }
+
+  Future share2(List<String> files) async {
+    String id = new DateTime.now().millisecondsSinceEpoch.toString();
+    List<String> archives = [];
+    for (var i = 0; i < files.length; i++) {
+      File file = File(files[i]);
+      final String resp = await _repository.setFileFirebase(file: file, phone: phone);
+      archives.add(resp);
+      await _repository.sendImageWhatsapp(url: resp, id: id, nameFile: "File$i");
+    }
+    return archives;
   }
 }

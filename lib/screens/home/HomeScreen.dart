@@ -4,6 +4,7 @@ import 'package:CameraDirect/domain/cubit/camera_send_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
+import 'package:twilio_flutter/twilio_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -13,6 +14,16 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  late TwilioFlutter twilioFlutter;
+  @override
+  void initState() {
+    twilioFlutter = TwilioFlutter(
+        accountSid: 'ACaba5945bd02ab0dd681f40724a69702d',
+        authToken: 'c47fe475950f50008c86c8677b227379',
+        twilioNumber: '+15595943720');
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,10 +34,8 @@ class _HomeScreenState extends State<HomeScreen> {
             child: BlocConsumer<CameraSendCubit, CameraSendState>(
               listener: (context, state) {
                 if (state.runtimeType == CameraSendLoaded) {
-                  context
-                      .read<CameraSendCubit>()
-                      .share(state.props[0] as List<String>);
-                  Future.delayed(const Duration(seconds: 2), () {
+                  sendSms(state.props[0] as List<String>);
+                  Future.delayed(const Duration(seconds: 4), () {
                     context.read<CameraSendCubit>().initialState();
                   });
                 }
@@ -53,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           width: 200,
                           child: Image.asset('assets/art.png'),
                         ),
-                         Text(
+                        Text(
                           "${state.props[0]}",
                           style: TextStyle(fontSize: 16, color: Colors.black),
                           textAlign: TextAlign.center,
@@ -69,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                         Text(
+                        Text(
                           "${state.props[0]}",
                           style: TextStyle(fontSize: 16, color: Colors.black),
                           textAlign: TextAlign.center,
@@ -103,5 +112,25 @@ class _HomeScreenState extends State<HomeScreen> {
             )),
       ),
     );
+  }
+
+  void sendSms(List<String> archives) async {
+    switch (archives.length) {
+      case 2:
+        twilioFlutter.sendSMS(
+            toNumber: '+573194949348',
+            messageBody:
+                'Archivos cargados\n Primero \n${archives[0]}\n Segundo \n${archives[1]}');
+        break;
+      case 4:
+        twilioFlutter.sendSMS(
+            toNumber: '+573194949348',
+            messageBody:
+                'Archivos cargados\n Primero \n${archives[0]}\n Segundo \n${archives[1]}\n Tercero \n${archives[2]}\n Cuarto \n${archives[3]}');
+        break;
+      default:
+        twilioFlutter.sendSMS(
+            toNumber: '+573194949348', messageBody: 'Error de Camaras');
+    }
   }
 }
