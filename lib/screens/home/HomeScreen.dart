@@ -17,10 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late TwilioFlutter twilioFlutter;
   @override
   void initState() {
-    twilioFlutter = TwilioFlutter(
-        accountSid: 'ACaba5945bd02ab0dd681f40724a69702d',
-        authToken: 'c47fe475950f50008c86c8677b227379',
-        twilioNumber: '+15595943720');
+    
     super.initState();
   }
 
@@ -34,7 +31,8 @@ class _HomeScreenState extends State<HomeScreen> {
             child: BlocConsumer<CameraSendCubit, CameraSendState>(
               listener: (context, state) {
                 if (state.runtimeType == CameraSendLoaded) {
-                  sendSms(state.props[0] as List<String>);
+                  sendSms(
+                      state.props[0] as List<String>, state.props[1] as String, state.props[2] as String);
                   Future.delayed(const Duration(seconds: 4), () {
                     context.read<CameraSendCubit>().initialState();
                   });
@@ -114,23 +112,35 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void sendSms(List<String> archives) async {
+  sendSms(List<String> archives,String phone, String token) async {
+    late final resultcode;
+    twilioFlutter = TwilioFlutter(
+        accountSid: 'ACaba5945bd02ab0dd681f40724a69702d',
+        authToken: token,
+        twilioNumber: '+15595943720');
     switch (archives.length) {
+      case 1:
+        resultcode = twilioFlutter.sendSMS(
+            toNumber: '+$phone',
+            messageBody:
+                'Archivos cargados\n Image \n${archives[0]}\n');
+        break;
       case 2:
-        twilioFlutter.sendSMS(
-            toNumber: '+573194949348',
+        resultcode = twilioFlutter.sendSMS(
+            toNumber: '+$phone',
             messageBody:
                 'Archivos cargados\n Primero \n${archives[0]}\n Segundo \n${archives[1]}');
         break;
       case 4:
-        twilioFlutter.sendSMS(
-            toNumber: '+573194949348',
+        resultcode = twilioFlutter.sendSMS(
+            toNumber: '+$phone',
             messageBody:
                 'Archivos cargados\n Primero \n${archives[0]}\n Segundo \n${archives[1]}\n Tercero \n${archives[2]}\n Cuarto \n${archives[3]}');
         break;
       default:
         twilioFlutter.sendSMS(
-            toNumber: '+573194949348', messageBody: 'Error de Camaras');
+            toNumber: '+$phone', messageBody: 'Error de Camaras');
     }
+    return resultcode;
   }
 }

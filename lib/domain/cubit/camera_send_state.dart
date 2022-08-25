@@ -19,10 +19,12 @@ class CameraSendLoading extends CameraSendState {
 
 class CameraSendLoaded extends CameraSendState {
   final List<String> files;
-  const CameraSendLoaded(this.files);
+  final String phone;
+  final String token;
+  const CameraSendLoaded(this.files, this.phone, this.token);
 
   @override
-  List<Object> get props => [files];
+  List<Object> get props => [files, phone, token];
 }
 
 class CameraSendError extends CameraSendState {

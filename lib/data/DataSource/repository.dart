@@ -11,16 +11,6 @@ class Repository implements AbstractContract {
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
   FirebaseStorage _storage = FirebaseStorage.instance;
 
-  @override
-  Future<String?> getPhoneNumber() async {
-    try {
-      DocumentSnapshot<Map<String, dynamic>> resp =
-          await _firestore.collection('Tel').doc('Phone').get();
-      return resp['Phone'];
-    } on FirebaseException catch (e) {
-      throw Exception(e);
-    }
-  }
 
   Future sendImageWhatsapp(
       {required String url,
@@ -46,6 +36,17 @@ class Repository implements AbstractContract {
       return urlImage;
     } catch (e) {
       print(e.toString());
+    }
+  }
+  
+  @override
+  Future<String?> getTokenTwilio() async{
+    try {
+      DocumentSnapshot<Map<String, dynamic>> resp =
+          await _firestore.collection('Auth').doc('Token').get();
+      return resp['Token'];
+    } on FirebaseException catch (e) {
+      throw Exception(e);
     }
   }
 }

@@ -1,6 +1,6 @@
 import 'package:CameraDirect/data/DataSource/repository.dart';
 import 'package:CameraDirect/domain/cubit/camera_send_cubit.dart';
-import 'package:CameraDirect/screens/home/HomeScreen.dart';
+import 'package:CameraDirect/screens/home/LogoScreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,11 +20,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => CameraSendCubit(Repository()),
-      child: const MaterialApp(
+      child: MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'CameraDirect',
           home: Scaffold(
-            body: HomeScreen(),
+            body: LogoScreen(),
           )),
     );
   }
