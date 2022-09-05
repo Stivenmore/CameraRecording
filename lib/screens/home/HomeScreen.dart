@@ -1,6 +1,7 @@
 // ignore_for_file: file_names, must_call_super
 
 import 'package:CameraDirect/domain/cubit/camera_send_cubit.dart';
+import 'package:CameraDirect/screens/home/InputPhoneScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
@@ -17,7 +18,6 @@ class _HomeScreenState extends State<HomeScreen> {
   late TwilioFlutter twilioFlutter;
   @override
   void initState() {
-    
     super.initState();
   }
 
@@ -31,8 +31,8 @@ class _HomeScreenState extends State<HomeScreen> {
             child: BlocConsumer<CameraSendCubit, CameraSendState>(
               listener: (context, state) {
                 if (state.runtimeType == CameraSendLoaded) {
-                  sendSms(
-                      state.props[0] as List<String>, state.props[1] as String, state.props[2] as String);
+                  sendSms(state.props[0] as List<String>,
+                      state.props[1] as String, state.props[2] as String);
                   Future.delayed(const Duration(seconds: 4), () {
                     context.read<CameraSendCubit>().initialState();
                   });
@@ -83,9 +83,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         TextButton(
                             onPressed: () {
-                              context
-                                  .read<CameraSendCubit>()
-                                  .captureVideoAndPhoto();
+                              Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: ((context) =>
+                                          InputPhoneScreen())),
+                                  (route) => false);
                             },
                             child: const Text(
                               "Reintentar",
@@ -112,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  sendSms(List<String> archives,String phone, String token) async {
+  sendSms(List<String> archives, String phone, String token) async {
     late final resultcode;
     twilioFlutter = TwilioFlutter(
         accountSid: 'ACaba5945bd02ab0dd681f40724a69702d',
@@ -122,8 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 1:
         resultcode = twilioFlutter.sendSMS(
             toNumber: '+$phone',
-            messageBody:
-                'Archivos cargados\n Image \n${archives[0]}\n');
+            messageBody: 'Archivos cargados\n Image \n${archives[0]}\n');
         break;
       case 2:
         resultcode = twilioFlutter.sendSMS(
