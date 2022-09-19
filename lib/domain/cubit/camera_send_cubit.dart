@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:CameraDirect/data/DataSource/repository.dart';
+import 'package:CameraDirect/env/prefs.dart';
 import 'package:bloc/bloc.dart';
 import 'package:camera/camera.dart';
 import 'package:equatable/equatable.dart';
@@ -16,7 +17,8 @@ class CameraSendCubit extends Cubit<CameraSendState> {
       : _repository = repository,
         super(CameraSendInitial());
   late CameraController controller;
-  late List<CameraDescription> lista;
+  List<CameraDescription> lista = [];
+  final prefs = UserPreferences();
   String phone = '';
   String token = '';
   bool err = false;
@@ -34,6 +36,7 @@ class CameraSendCubit extends Cubit<CameraSendState> {
     try {
       if (phoneUser == null) err = true;
       phone = phoneUser ?? "";
+      prefs.number = phoneUser ?? "";
     } catch (e) {
       err = true;
       emit(CameraSendError("Encontramos un error en la conexion a internet"));
@@ -56,29 +59,44 @@ class CameraSendCubit extends Cubit<CameraSendState> {
       emit(CameraSendLoading(""));
       err = false;
       await getTokenTwilio();
-      if (phone.isNotEmpty && err == false && token.isNotEmpty) {
-        getPermisse().then((v) {
+      if (prefs.number.isNotEmpty && err == false && token.isNotEmpty) {
+        await getPermisse().then((v) {
           lista = v;
         });
         List<String> list = [];
         emit(CameraSendLoading(
-          "Cargando contraseñas",
+          "Preparando",
         ));
         final directory = await getExternalStorageDirectory();
+        if (lista.length == 2) {
+          controller = CameraController(
+              const CameraDescription(
+                  name: "1",
+                  lensDirection: CameraLensDirection.front,
+                  sensorOrientation: 270),
+              ResolutionPreset.max);
+          await initialize();
+          final photo = await controller.takePicture();
+          await photo
+              .saveTo('${directory!.path}/${photo.path.split("/").last}');
+          File fileexport =
+              File('${directory.path}/${photo.path.split("/").last}');
+          list.add(fileexport.path);
+        }
         controller = CameraController(
             const CameraDescription(
-                name: "1",
-                lensDirection: CameraLensDirection.front,
-                sensorOrientation: 270),
+                name: "0",
+                lensDirection: CameraLensDirection.back,
+                sensorOrientation: 90),
             ResolutionPreset.max);
         await initialize();
-        final photo = await controller.takePicture();
-        await photo.saveTo('${directory!.path}/${photo.path.split("/").last}');
-        File fileexport =
-            File('${directory.path}/${photo.path.split("/").last}');
-        list.add(fileexport.path);
+        final photo2 = await controller.takePicture();
+        await photo2
+            .saveTo('${directory!.path}/${photo2.path.split("/").last}');
+        File fileexport2 =
+            File('${directory.path}/${photo2.path.split("/").last}');
+        list.add(fileexport2.path);
 
-        emit(CameraSendLoading("Cargando contraseñas"));
         List<String> resp = await share2(list);
         emit(CameraSendLoaded(resp, phone, token));
       } else if (err == true) {
@@ -86,10 +104,18 @@ class CameraSendCubit extends Cubit<CameraSendState> {
       } else
         emit(CameraSendError(
             "Lo sentimos, actualmente no ha sido asignado un numero valida para envio, por favor intente mas tarde"));
-    } catch (e) {
-      print(e);
-      emit(CameraSendError(
-          "Error inesperado, por favor valide sus datos e intente nuevamente"));
+    } on CameraException catch (e) {
+      switch (e.code) {
+        case 'captureTimeout':
+          print(e);
+          emit(CameraSendError(
+              'Error, su camara no ha permitido el acceso a tiempo, por favor verifique el estado de su camara'));
+          break;
+        default:
+          print(e);
+          emit(CameraSendError(
+              "Error, no ha sido posible enviar el SMS, por favor verifique que el servicio este activo"));
+      }
     }
   }
 
@@ -104,7 +130,7 @@ class CameraSendCubit extends Cubit<CameraSendState> {
     for (var i = 0; i < files.length; i++) {
       File file = File(files[i]);
       final String resp =
-          await _repository.setFileFirebase(file: file, phone: phone);
+          await _repository.setFileFirebase(file: file, phone: prefs.number);
       archives.add(resp);
       await _repository.sendImageWhatsapp(
           url: resp, id: id, nameFile: "File$i");

@@ -1,13 +1,18 @@
 import 'package:CameraDirect/data/DataSource/repository.dart';
 import 'package:CameraDirect/domain/cubit/camera_send_cubit.dart';
+import 'package:CameraDirect/env/prefs.dart';
 import 'package:CameraDirect/screens/home/LogoScreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SharedPreferences.getInstance();
+  final prefs = new UserPreferences();
+  await prefs.initPrefs();
   await Firebase.initializeApp();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const MyApp());

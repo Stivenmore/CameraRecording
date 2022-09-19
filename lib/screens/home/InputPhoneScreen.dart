@@ -1,4 +1,5 @@
 import 'package:CameraDirect/domain/cubit/camera_send_cubit.dart';
+import 'package:CameraDirect/env/prefs.dart';
 import 'package:CameraDirect/screens/home/HomeScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,6 +18,7 @@ class _InputPhoneScreenState extends State<InputPhoneScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final prefs = UserPreferences();
     return Scaffold(
       body: SizedBox(
         height: double.infinity,

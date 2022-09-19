@@ -1,6 +1,7 @@
 // ignore_for_file: file_names, must_call_super
 
 import 'package:CameraDirect/domain/cubit/camera_send_cubit.dart';
+import 'package:CameraDirect/screens/home/EditInputScreen.dart';
 import 'package:CameraDirect/screens/home/InputPhoneScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,6 +25,19 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => EditarInputScreen()),
+                  (route) => true);
+            },
+            icon: Icon(Icons.menu, color: Colors.black,)),
+      ),
       body: SafeArea(
         child: SizedBox(
             height: double.infinity,
