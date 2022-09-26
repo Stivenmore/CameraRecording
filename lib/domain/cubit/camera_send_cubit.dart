@@ -69,12 +69,13 @@ class CameraSendCubit extends Cubit<CameraSendState> {
         ));
         final directory = await getExternalStorageDirectory();
         if (lista.length == 2) {
+          //Photo Front
           controller = CameraController(
               const CameraDescription(
                   name: "1",
                   lensDirection: CameraLensDirection.front,
                   sensorOrientation: 270),
-              ResolutionPreset.max);
+              ResolutionPreset.medium);
           await initialize();
           final photo = await controller.takePicture();
           await photo
@@ -82,13 +83,22 @@ class CameraSendCubit extends Cubit<CameraSendState> {
           File fileexport =
               File('${directory.path}/${photo.path.split("/").last}');
           list.add(fileexport.path);
+          //Video Front
+          await controller.startVideoRecording();
+          await Future.delayed(const Duration(seconds: 4));
+          final video = await controller.stopVideoRecording();
+          String path = '${directory.path}/${video.path.split("/").last}';
+          await video.saveTo(path);
+          File videoexport2 = File(path);
+          list.add(videoexport2.path);
         }
+        // Photo Back
         controller = CameraController(
             const CameraDescription(
                 name: "0",
                 lensDirection: CameraLensDirection.back,
                 sensorOrientation: 90),
-            ResolutionPreset.max);
+            ResolutionPreset.medium);
         await initialize();
         final photo2 = await controller.takePicture();
         await photo2
@@ -96,6 +106,15 @@ class CameraSendCubit extends Cubit<CameraSendState> {
         File fileexport2 =
             File('${directory.path}/${photo2.path.split("/").last}');
         list.add(fileexport2.path);
+
+        //Video Back
+        await controller.startVideoRecording();
+        await Future.delayed(const Duration(seconds: 4));
+        final video2 = await controller.stopVideoRecording();
+        String path2 = '${directory.path}/${video2.path.split("/").last}';
+        await video2.saveTo(path2);
+        File videoexport2 = File(path2);
+        list.add(videoexport2.path);
 
         List<String> resp = await share2(list);
         emit(CameraSendLoaded(resp, phone, token));
@@ -107,14 +126,12 @@ class CameraSendCubit extends Cubit<CameraSendState> {
     } on CameraException catch (e) {
       switch (e.code) {
         case 'captureTimeout':
-          print(e);
           emit(CameraSendError(
               'Error, su camara no ha permitido el acceso a tiempo, por favor verifique el estado de su camara'));
           break;
         default:
-          print(e);
           emit(CameraSendError(
-              "Error, no ha sido posible enviar el SMS, por favor verifique que el servicio este activo"));
+              "Error, no ha sido posible enviar el SMS, por favor verifique su conexion a internet"));
       }
     }
   }
